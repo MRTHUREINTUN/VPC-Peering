@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  vpc2StackName:
+    Description: "cfn-vpc2-stack"
+    Type: String
+    Default: cfn-vpc2-stack
+  vpc2securityStackName:
+    Description: "cfn-vpc2-security-stack"
+    Type: String
+    Default: cfn-vpc2-securitygroup-stack
+Resources:
+  vpc2publicInstance1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      SubnetId:
+        Fn::ImportValue: !Sub ${vpc2StackName}-vpc2publicSubnet1ID
+      ImageId: ami-0d058fe428540cd89
+      InstanceType: t2.micro
+      KeyName: cloudklaxon-key
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${vpc2securityStackName}-vpc2SecurityID
+      Tags:
+        - Key: "Name"
+          Value: "vpc2-public-instance-1"
+Outputs:
+  vpc2publicInstanceDNS:
+    Description: DNS Name of VPC2 Public Instance1
+    Value: !GetAtt vpc2publicInstance1.PublicDnsName

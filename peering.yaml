@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  vpc1StackName: # ParameterKey
+    Description: "cfn-vpc1"
+    Type: String
+    Default: "cfn-vpc1-stack"
+  vpc2StackName: # ParameterKey
+    Description: "cfn-vpc2"
+    Type: String
+    Default: "cfn-vpc2-stack"
+  PeerVPCAccountId:
+    Description: "AWS AccountID of the VPC to peer with"
+    Type: String
+    MinLength: 12
+    MaxLength: 12
+Resources:
+  peeringVPC1andVPC2:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      PeerOwnerId: !Ref PeerVPCAccountId # The AWS account ID of the owner of the accepter VPC.
+      VpcId:
+        Fn::ImportValue: !Sub ${vpc1StackName}-VPC1ID #vpc1ID
+      PeerVpcId:
+        Fn::ImportValue: !Sub ${vpc2StackName}-VPC2ID #vpc2ID
+Outputs:
+  peeringConnectionID: #logicalID
+    Description: "peering Connection ID"
+    Value: !Ref peeringVPC1andVPC2 # the vaule of export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-peeringConnectionID # the name of infra-stack export

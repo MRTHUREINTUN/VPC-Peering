@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  cloudklaxonMasterVpc1: #create a VPC cloudklaxonMasterVpc1
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "192.168.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      Tags:
+        - Key: "Name"
+          Value: "cloudklaxon-master-vpc1"
+  vpc1publicSubnet1: #add a subnet publicsubnet1
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-southeast-1a"
+      CidrBlock: "192.168.1.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "mastervpc1-public-subnet1"
+      VpcId: !Ref cloudklaxonMasterVpc1
+  vpc1publicSubnet2: #add a subnet publicsubnet2
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-southeast-1b"
+      CidrBlock: "192.168.2.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "mastervpc1-public-subnet2"
+      VpcId: !Ref cloudklaxonMasterVpc1
+  vpc1publicSubnet3: #add a subnet publicsubnet3
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-southeast-1c"
+      CidrBlock: "192.168.3.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "mastervpc1-public-subnet3"
+      VpcId: !Ref cloudklaxonMasterVpc1
+  vpc1routeTableForPublicSubnets: # public subnets routetable
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "vpc1-route-table-publicSubnets"
+      VpcId: !Ref cloudklaxonMasterVpc1
+  publicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref vpc1publicSubnet1
+      RouteTableId: !Ref vpc1routeTableForPublicSubnets
+  publicSubnet2RouteTableAssociation: # associate publicSubnet2 to route table
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref vpc1publicSubnet2
+      RouteTableId: !Ref vpc1routeTableForPublicSubnets
+  publicSubnet3RouteTableAssociation: # associate publicSubnet3 to route table
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref vpc1publicSubnet3
+      RouteTableId: !Ref vpc1routeTableForPublicSubnets
+  cloudklaxonvpc1IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "cloudklaxon vpc1 igw"
+  attachVPCAndIGW:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref cloudklaxonvpc1IGW
+      VpcId: !Ref cloudklaxonMasterVpc1
+  defaultRouteToIGW:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref cloudklaxonvpc1IGW
+      RouteTableId: !Ref vpc1routeTableForPublicSubnets
+Outputs:
+  cloudklaxonMasterVpc1ID: # logicalID
+    Description: "cloudklaxon Master VPC1 ID"
+    Value: !Ref cloudklaxonMasterVpc1 # the value of cloudklaxonMasterVpc1 export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-VPC1ID # the name of cloudklaxonMasterVpc1 export
+  vpc1publicSubnet1ID: #logicalID
+    Description: "cloudklaxon Master VPC1 publicsubnet1 ID"
+    Value: !Ref vpc1publicSubnet1 # the value of export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc1publicSubnet1ID # the name of vpc1publicSubnet1 export
+  vpc1publicSubnet2ID: #logicalID
+    Description: "cloudklaxon Master VPC1 publicsubnet2 ID"
+    Value: !Ref vpc1publicSubnet2 # the value of export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc1publicSubnet2ID # the name of  export
+  vpc1publicSubnet3ID: #logicalID
+    Description: "cloudklaxon Master VPC1 publicsubnet3 ID"
+    Value: !Ref vpc1publicSubnet3 # the value of export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc1publicSubnet3ID # the name of export
+  vpc1routeTableForPublicSubnets: #logicalID same logicalID with routeTable but no error
+    Description: "cloudklaxon vpc1 routeTable ID"
+    Value: !Ref vpc1routeTableForPublicSubnets # the vaule of export is here
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc1routeTableID # the name of  export
+  vpc1CidrBlockID:
+    Description: "cloudklaxon Master VPC1 CidrBlock ID"
+    Value: !GetAtt cloudklaxonMasterVpc1.CidrBlock
+    Export:
+      Name: !Sub ${AWS::StackName}-VPC1CIDR # the name of export
